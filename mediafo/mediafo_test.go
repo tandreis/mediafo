@@ -3,6 +3,7 @@ package mediafo
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -16,7 +17,12 @@ var vfsMap = fstest.MapFS{
 		ModTime: time.Date(2010, 10, 1, 0, 0, 0, 0, time.UTC),
 		Mode:    0666,
 	},
-	"dir2/file2.png": {
+	filepath.Join("dir1", "file2.png"): {
+		Data:    []byte("file 2"),
+		ModTime: time.Date(2011, 1, 1, 0, 0, 0, 0, time.UTC),
+		Mode:    0666,
+	},
+	filepath.Join("dir2", "file2.png"): {
 		Data:    []byte("file 2"),
 		ModTime: time.Date(2011, 1, 1, 0, 0, 0, 0, time.UTC),
 		Mode:    0666,
@@ -24,12 +30,12 @@ var vfsMap = fstest.MapFS{
 }
 
 var vfsMapWant = fstest.MapFS{
-	"2010/10/file1.png": {
+	filepath.Join("2010", "10", "file1.png"): {
 		Data:    []byte("file 1"),
 		ModTime: time.Date(2010, 10, 1, 0, 0, 0, 0, time.UTC),
 		Mode:    0666,
 	},
-	"2011/01/file2.png": {
+	filepath.Join("2011", "01", "file2.png"): {
 		Data:    []byte("file 2"),
 		ModTime: time.Date(2011, 1, 1, 0, 0, 0, 0, time.UTC),
 		Mode:    0666,
@@ -64,11 +70,10 @@ func prepareVFSMap() {
 
 func TestBasic(t *testing.T) {
 	prepareVFSMap()
-	fmt.Println(*vfsMapPtr)
+
 	moveMedia(*vfsMapPtr, ".", ".", mockOSInterface{})
-	fmt.Println(*vfsMapPtr)
 
 	if diff := cmp.Diff(vfsMapWant, *vfsMapPtr); diff != "" {
-		t.Errorf("MakeGatewayInfo() mismatch (-want +got):\n%s", diff)
+		t.Errorf("moveMedia() mismatch (-want +got):\n%s", diff)
 	}
 }
